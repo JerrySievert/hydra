@@ -1077,7 +1077,12 @@ columnar_multi_insert(Relation relation, TupleTableSlot **slots, int ntuples,
 
 		tupleSlot->tts_tid = row_number_to_tid(writtenRowNumber);
 
+#if PG_VERSION_NUM < PG_VERSION_17
 		MemoryContextResetAndDeleteChildren(ColumnarWritePerTupleContext(writeState));
+#else
+    MemoryContextDeleteChildren(ColumnarWritePerTupleContext(writeState));
+    MemoryContextReset(ColumnarWritePerTupleContext(writeState));
+#endif
 	}
 
 	MemoryContextSwitchTo(oldContext);
@@ -1287,9 +1292,9 @@ columnar_relation_nontransactional_truncate(Relation rel)
 
 	if (unlikely(rel->rd_smgr == NULL))
 	{
-#if PG_VERSION_NUM >= PG_VERSION_16
+#if PG_VERSION_NUM >= PG_VERSION_16 && PG_VERSION_NUM < PG_VERSION_17
 		smgrsetowner(&(rel->rd_smgr), smgropen(rel->rd_locator, rel->rd_backend));
-#else
+#elif PG_VERSION_NUM < PG_VERSION_16
 		smgrsetowner(&(rel->rd_smgr), smgropen(rel->rd_node, rel->rd_backend));
 #endif
 	}
@@ -1866,9 +1871,9 @@ LogRelationStats(Relation rel, int elevel)
 
 	if (unlikely(rel->rd_smgr == NULL))
 	{
-#if PG_VERSION_NUM >= PG_VERSION_16
+#if PG_VERSION_NUM == PG_VERSION_16
 		smgrsetowner(&(rel->rd_smgr), smgropen(rel->rd_locator, rel->rd_backend));
-#else
+#elif PG_VERSION_NUM < PG_VERSION_16
 		smgrsetowner(&(rel->rd_smgr), smgropen(rel->rd_node, rel->rd_backend));
 #endif
 	}
@@ -1991,9 +1996,9 @@ TruncateColumnar(Relation rel, int elevel)
 #endif
 		if (unlikely(rel->rd_smgr == NULL))
 		{
-#if PG_VERSION_NUM >= PG_VERSION_16
+#if PG_VERSION_NUM == PG_VERSION_16
 			smgrsetowner(&(rel->rd_smgr), smgropen(rel->rd_locator, rel->rd_backend));
-#else
+#elif PG_VERSION_NUM < PG_VERSION_16
 			smgrsetowner(&(rel->rd_smgr), smgropen(rel->rd_node, rel->rd_backend));
 #endif
 		}
@@ -2061,10 +2066,14 @@ ConditionalLockRelationWithTimeout(Relation rel, LOCKMODE lockMode, int timeout,
 	return true;
 }
 
-
+#if PG_VERSION_NUM <= PG_VERSION_16
 static bool
 columnar_scan_analyze_next_block(TableScanDesc scan, BlockNumber blockno,
 								 BufferAccessStrategy bstrategy)
+#else
+static bool
+columnar_scan_analyze_next_block(TableScanDesc scan, ReadStream *stream)
+#endif
 {
 	/*
 	 * Our access method is not pages based, i.e. tuples are not confined
@@ -2555,9 +2564,9 @@ columnar_relation_size(Relation rel, ForkNumber forkNumber)
 
 	if (unlikely(rel->rd_smgr == NULL))
 	{
-#if PG_VERSION_NUM >= PG_VERSION_16
+#if PG_VERSION_NUM == PG_VERSION_16
 		smgrsetowner(&(rel->rd_smgr), smgropen(rel->rd_locator, rel->rd_backend));
-#else
+#elif PG_VERSION_NUM < PG_VERSION_16
 		smgrsetowner(&(rel->rd_smgr), smgropen(rel->rd_node, rel->rd_backend));
 #endif
 	}
@@ -2593,9 +2602,9 @@ columnar_estimate_rel_size(Relation rel, int32 *attr_widths,
 {
 	if (unlikely(rel->rd_smgr == NULL))
 	{
-#if PG_VERSION_NUM >= PG_VERSION_16
+#if PG_VERSION_NUM == PG_VERSION_16
 		smgrsetowner(&(rel->rd_smgr), smgropen(rel->rd_locator, rel->rd_backend));
-#else
+#elif PG_VERSION_NUM < PG_VERSION_16
 		smgrsetowner(&(rel->rd_smgr), smgropen(rel->rd_node, rel->rd_backend));
 #endif
 	}

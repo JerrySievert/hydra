@@ -373,9 +373,9 @@ ColumnarStorageIsCurrent(Relation rel)
 {
 	if (unlikely(rel->rd_smgr == NULL))
 	{
-#if PG_VERSION_NUM >= PG_VERSION_16
+#if PG_VERSION_NUM == PG_VERSION_16
 		smgrsetowner(&(rel->rd_smgr), smgropen(rel->rd_locator, rel->rd_backend));
-#else
+#elif PG_VERSION_NUM < PG_VERSION_16
 		smgrsetowner(&(rel->rd_smgr), smgropen(rel->rd_node, rel->rd_backend));
 #endif
 	}
@@ -466,9 +466,9 @@ ColumnarStorageReserveData(Relation rel, uint64 amount)
 	/* extend with new pages */
 	if (unlikely(rel->rd_smgr == NULL))
 	{
-#if PG_VERSION_NUM >= PG_VERSION_16
+#if PG_VERSION_NUM == PG_VERSION_16
 		smgrsetowner(&(rel->rd_smgr), smgropen(rel->rd_locator, rel->rd_backend));
-#else
+#elif PG_VERSION_NUM < PG_VERSION_16
 		smgrsetowner(&(rel->rd_smgr), smgropen(rel->rd_node, rel->rd_backend));
 #endif
 	}
@@ -582,9 +582,9 @@ ColumnarStorageTruncate(Relation rel, uint64 newDataReservation)
 
 	if (unlikely(rel->rd_smgr == NULL))
 	{
-#if PG_VERSION_NUM >= PG_VERSION_16
+#if PG_VERSION_NUM == PG_VERSION_16
 		smgrsetowner(&(rel->rd_smgr), smgropen(rel->rd_locator, rel->rd_backend));
-#else
+#elif PG_VERSION_NUM < PG_VERSION_16
 		smgrsetowner(&(rel->rd_smgr), smgropen(rel->rd_node, rel->rd_backend));
 #endif
 	}
@@ -670,9 +670,9 @@ ColumnarMetapageRead(Relation rel, bool force)
 {
 	if (unlikely(rel->rd_smgr == NULL))
 	{
-#if PG_VERSION_NUM >= PG_VERSION_16
+#if PG_VERSION_NUM == PG_VERSION_16
 		smgrsetowner(&(rel->rd_smgr), smgropen(rel->rd_locator, rel->rd_backend));
-#else
+#elif PG_VERSION_NUM < PG_VERSION_16
 		smgrsetowner(&(rel->rd_smgr), smgropen(rel->rd_node, rel->rd_backend));
 #endif
 	}

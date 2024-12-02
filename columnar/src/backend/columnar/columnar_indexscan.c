@@ -723,9 +723,13 @@ ColumnarIndexScan_BeginCustomScan(CustomScanState *css, EState *estate, int efla
 	IndexScan *isNode = (IndexScan *) linitial(cscan->custom_plans);
 	
 	/* Free the exprcontext */
+#if PG_VERSION_NUM < PG_VERSION_17
 	ExecFreeExprContext(&css->ss.ps);
+#else
+  FreeExprContext(&css->ss.ps, false);
+#endif
 
-	/* Clean out the tuple table */
+/* Clean out the tuple table */
 	ExecClearTuple(css->ss.ps.ps_ResultTupleSlot);
 	ExecClearTuple(css->ss.ss_ScanTupleSlot);
 

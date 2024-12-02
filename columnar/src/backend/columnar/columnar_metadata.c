@@ -2558,9 +2558,9 @@ ColumnarStorageUpdateIfNeeded(Relation rel, bool isUpgrade)
 	 */
 	if (unlikely(rel->rd_smgr == NULL))
 	{
-	#if PG_VERSION_NUM >= PG_VERSION_16
+	#if PG_VERSION_NUM == PG_VERSION_16
 		smgrsetowner(&(rel->rd_smgr), smgropen(rel->rd_locator, rel->rd_backend));
-	#else
+	#elif PG_VERSION_NUM < PG_VERSION_16
 		smgrsetowner(&(rel->rd_smgr), smgropen(rel->rd_node, rel->rd_backend));
 	#endif
 	}

@@ -4876,7 +4876,9 @@ ExecEndAgg(AggState *node)
 	 * ExecFreeExprContext), just unlinking the output one from the plan node
 	 * suffices.
 	 */
+#if PG_VERSION_NUM < PG_VERSION_17
 	ExecFreeExprContext(&node->ss.ps);
+#endif
 
 	/* clean up tuple table */
 	ExecClearTuple(node->ss.ss_ScanTupleSlot);
@@ -5291,9 +5293,11 @@ BeginVectorAgg(CustomScanState *css, EState *estate, int eflags)
 	Agg	*aggNode = (Agg *)linitial(cscan->custom_plans);
 
 	/* Free the exprcontext */
+#if PG_VERSION_NUM < PG_VERSION_17
 	ExecFreeExprContext(&css->ss.ps);
+#endif
 
-	/* Clean out the tuple table */
+/* Clean out the tuple table */
 	ExecClearTuple(css->ss.ps.ps_ResultTupleSlot);
 	ExecClearTuple(css->ss.ss_ScanTupleSlot);
 

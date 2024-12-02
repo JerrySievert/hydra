@@ -2504,9 +2504,13 @@ ColumnarScan_EndCustomScan(CustomScanState *node)
 	/*
 	 * Free the exprcontext
 	 */
+#if PG_VERSION_NUM < PG_VERSION_17
 	ExecFreeExprContext(&node->ss.ps);
+#else
+  FreeExprContext(&node->ss.ps, false);
+#endif
 
-	/*
+/*
 	 * clean out the tuple table
 	 */
 	if (node->ss.ps.ps_ResultTupleSlot)
